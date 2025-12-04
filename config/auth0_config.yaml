@@ -4,7 +4,7 @@
 # 1. Create an Auth0 account at https://auth0.com
 # 2. Create a new "Regular Web Application" in your Auth0 dashboard
 # 3. Configure the following settings in your Auth0 application:
-#    - Allowed Callback URLs: http://localhost:8501/callback
+#    - Allowed Callback URLs: http://localhost:8501
 #    - Allowed Logout URLs: http://localhost:8501
 #    - Allowed Web Origins: http://localhost:8501
 # 4. Copy your credentials below OR use environment variables
@@ -14,6 +14,11 @@
 #   AUTH0_CLIENT_ID - Your Auth0 application client ID
 #   AUTH0_CLIENT_SECRET - Your Auth0 application client secret
 #   AUTH0_CALLBACK_URL - Callback URL for OAuth flow
+#
+# Access Control (restrict to specific users):
+#   AUTH0_ALLOWED_EMAILS - Comma-separated list of allowed email addresses
+#   AUTH0_ALLOWED_DOMAINS - Comma-separated list of allowed email domains
+#   Leave both empty to allow all authenticated users
 
 auth0:
   # Your Auth0 tenant domain (e.g., your-tenant.us.auth0.com)
@@ -42,8 +47,18 @@ session:
   # Session expiry in days
   expiry_days: 30
 
-# Optional: Allowed email domains (leave empty to allow all)
-# allowed_domains:
-#   - example.com
-#   - yourcompany.com
+# Access Control Settings
+# Use environment variables to restrict access:
+#
+# Option 1: Allow specific email addresses
+#   export AUTH0_ALLOWED_EMAILS="user1@gmail.com,user2@company.com"
+#
+# Option 2: Allow entire email domains
+#   export AUTH0_ALLOWED_DOMAINS="company.com,partner.org"
+#
+# Option 3: Combine both (user passes if they match either)
+#   export AUTH0_ALLOWED_EMAILS="special@external.com"
+#   export AUTH0_ALLOWED_DOMAINS="company.com"
+#
+# Leave both empty/unset to allow ALL authenticated users
 

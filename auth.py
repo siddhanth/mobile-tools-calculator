@@ -10,15 +10,28 @@ import streamlit as st
 from urllib.parse import urlencode, quote_plus
 import secrets
 import json
+import base64
+import hashlib
+import hmac
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import httpx
-from authlib.integrations.requests_client import OAuth2Session
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Session cookie settings
+SESSION_COOKIE_NAME = "sip_session"
+SESSION_EXPIRY_DAYS = 30
+
+# Access control - comma-separated list of allowed emails or domains
+# Examples: 
+#   AUTH0_ALLOWED_EMAILS="user1@gmail.com,user2@company.com"
+#   AUTH0_ALLOWED_DOMAINS="company.com,partner.org"
+# Leave empty to allow all authenticated users
+ALLOWED_EMAILS = [e.strip().lower() for e in os.getenv("AUTH0_ALLOWED_EMAILS", "").split(",") if e.strip()]
+ALLOWED_DOMAINS = [d.strip().lower() for d in os.getenv("AUTH0_ALLOWED_DOMAINS", "").split(",") if d.strip()]
 
 
 class Auth0Config:
@@ -60,6 +73,101 @@ def get_auth0_config() -> Auth0Config:
     return st.session_state.auth0_config
 
 
+def _get_session_secret() -> str:
+    """Get or generate a session secret for signing cookies."""
+    config = get_auth0_config()
+    # Use client secret as base for session signing
+    return config.client_secret or "default-secret-change-me"
+
+
+def _sign_session_data(data: dict) -> str:
+    """Sign session data and return base64 encoded string."""
+    secret = _get_session_secret()
+    json_data = json.dumps(data, sort_keys=True)
+    signature = hmac.new(
+        secret.encode(), 
+        json_data.encode(), 
+        hashlib.sha256
+    ).hexdigest()
+    
+    payload = {"data": data, "sig": signature}
+    return base64.b64encode(json.dumps(payload).encode()).decode()
+
+
+def _verify_session_data(token: str) -> dict | None:
+    """Verify and decode session data. Returns None if invalid."""
+    try:
+        secret = _get_session_secret()
+        payload = json.loads(base64.b64decode(token.encode()).decode())
+        
+        data = payload.get("data", {})
+        signature = payload.get("sig", "")
+        
+        # Verify signature
+        expected_sig = hmac.new(
+            secret.encode(),
+            json.dumps(data, sort_keys=True).encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if hmac.compare_digest(signature, expected_sig):
+            # Check expiry
+            expiry = data.get("expiry")
+            if expiry and datetime.fromisoformat(expiry) > datetime.now():
+                return data
+        return None
+    except Exception:
+        return None
+
+
+def _get_cookie_js(name: str) -> str:
+    """Generate JavaScript to read a cookie value."""
+    return f"""
+    <script>
+        function getCookie(name) {{
+            const value = `; ${{document.cookie}}`;
+            const parts = value.split(`; ${{name}}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }}
+        
+        const cookieValue = getCookie("{name}");
+        if (cookieValue) {{
+            // Send cookie value to Streamlit via query param trick
+            const url = new URL(window.location);
+            if (!url.searchParams.has('session_token') && !url.searchParams.has('code')) {{
+                url.searchParams.set('session_token', cookieValue);
+                window.history.replaceState({{}}, '', url);
+                window.location.reload();
+            }}
+        }}
+    </script>
+    """
+
+
+def _set_cookie_js(name: str, value: str, days: int = 30) -> str:
+    """Generate JavaScript to set a cookie."""
+    return f"""
+    <script>
+        (function() {{
+            const d = new Date();
+            d.setTime(d.getTime() + ({days}*24*60*60*1000));
+            const expires = "expires="+ d.toUTCString();
+            document.cookie = "{name}={value};" + expires + ";path=/;SameSite=Lax";
+        }})();
+    </script>
+    """
+
+
+def _delete_cookie_js(name: str) -> str:
+    """Generate JavaScript to delete a cookie."""
+    return f"""
+    <script>
+        document.cookie = "{name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax";
+    </script>
+    """
+
+
 def init_session_state():
     """Initialize session state variables for authentication."""
     defaults = {
@@ -69,10 +177,60 @@ def init_session_state():
         "id_token": None,
         "auth_code": None,
         "state": None,
+        "session_restored": False,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
+    
+    # Try to restore session from cookie (via query param)
+    _restore_session_from_cookie()
+
+
+def _restore_session_from_cookie():
+    """Restore session from cookie if present."""
+    if st.session_state.get("session_restored"):
+        return
+    
+    query_params = st.query_params
+    
+    # Check if session token is in query params (sent by JS)
+    if "session_token" in query_params:
+        token = query_params["session_token"]
+        session_data = _verify_session_data(token)
+        
+        if session_data:
+            # Restore session
+            st.session_state.authenticated = True
+            st.session_state.user = session_data.get("user")
+            st.session_state.access_token = session_data.get("access_token")
+            st.session_state.id_token = session_data.get("id_token")
+            st.session_state.session_restored = True
+            
+            # Clear the session_token from URL
+            st.query_params.clear()
+            st.rerun()
+        else:
+            # Invalid/expired token, clear it
+            st.query_params.clear()
+    
+    st.session_state.session_restored = True
+
+
+def _save_session_to_cookie():
+    """Save current session to cookie."""
+    if not st.session_state.get("authenticated"):
+        return
+    
+    session_data = {
+        "user": st.session_state.get("user"),
+        "access_token": st.session_state.get("access_token"),
+        "id_token": st.session_state.get("id_token"),
+        "expiry": (datetime.now() + timedelta(days=SESSION_EXPIRY_DAYS)).isoformat(),
+    }
+    
+    token = _sign_session_data(session_data)
+    st.components.v1.html(_set_cookie_js(SESSION_COOKIE_NAME, token, SESSION_EXPIRY_DAYS), height=0)
 
 
 def generate_auth_url() -> str:
@@ -147,6 +305,12 @@ def handle_callback():
     """Handle OAuth callback and exchange code for tokens."""
     query_params = st.query_params
     
+    # Skip if already authenticated
+    if st.session_state.get("authenticated"):
+        # Save session to cookie for persistence
+        _save_session_to_cookie()
+        return True
+    
     # Check for authorization code
     if "code" in query_params:
         code = query_params["code"]
@@ -170,8 +334,12 @@ def handle_callback():
                 st.session_state.user = user_info
                 st.session_state.authenticated = True
                 
-                # Clear the URL parameters
+                # Clear the URL parameters first
                 st.query_params.clear()
+                
+                # Save session to cookie for persistence
+                _save_session_to_cookie()
+                
                 return True
     
     # Check for error
@@ -195,6 +363,10 @@ def logout():
     st.session_state.id_token = None
     st.session_state.auth_code = None
     st.session_state.state = None
+    st.session_state.session_restored = False
+    
+    # Clear session cookie
+    st.components.v1.html(_delete_cookie_js(SESSION_COOKIE_NAME), height=0)
     
     # Build Auth0 logout URL
     logout_url = (
@@ -208,7 +380,25 @@ def logout():
 
 def is_authenticated() -> bool:
     """Check if user is authenticated."""
-    return st.session_state.get("authenticated", False)
+    authenticated = st.session_state.get("authenticated", False)
+    
+    # If not authenticated and no session_token in URL, inject JS to read cookie
+    if not authenticated:
+        query_params = st.query_params
+        if "session_token" not in query_params and "code" not in query_params:
+            # Inject JavaScript to read the session cookie
+            st.components.v1.html(_get_cookie_js(SESSION_COOKIE_NAME), height=0)
+    
+    return authenticated
+
+
+def is_authorized() -> bool:
+    """Check if user is both authenticated AND authorized."""
+    if not is_authenticated():
+        return False
+    
+    email = get_user_email()
+    return is_user_authorized(email)
 
 
 def get_user() -> dict | None:
@@ -230,6 +420,60 @@ def get_user_email() -> str | None:
     if user:
         return user.get("email")
     return None
+
+
+def is_user_authorized(email: str | None) -> bool:
+    """Check if a user's email is authorized to access the app.
+    
+    Authorization rules:
+    1. If no ALLOWED_EMAILS and no ALLOWED_DOMAINS are set, allow all
+    2. If ALLOWED_EMAILS is set, check if email is in the list
+    3. If ALLOWED_DOMAINS is set, check if email domain matches
+    """
+    # If no restrictions configured, allow all authenticated users
+    if not ALLOWED_EMAILS and not ALLOWED_DOMAINS:
+        return True
+    
+    if not email:
+        return False
+    
+    email_lower = email.lower()
+    
+    # Check exact email match
+    if ALLOWED_EMAILS and email_lower in ALLOWED_EMAILS:
+        return True
+    
+    # Check domain match
+    if ALLOWED_DOMAINS:
+        email_domain = email_lower.split("@")[-1] if "@" in email_lower else ""
+        if email_domain in ALLOWED_DOMAINS:
+            return True
+    
+    return False
+
+
+def render_unauthorized_page(email: str | None):
+    """Render page for unauthorized users."""
+    st.error("🚫 Access Denied")
+    st.markdown(f"""
+    ### You are not authorized to access this application.
+    
+    **Your email:** `{email or 'Unknown'}`
+    
+    If you believe this is an error, please contact the administrator.
+    """)
+    
+    # Show logout button
+    config = get_auth0_config()
+    logout_url = (
+        f"{config.logout_endpoint}?"
+        f"client_id={config.client_id}&"
+        f"returnTo={quote_plus(config.callback_url)}"
+    )
+    
+    if st.button("🔄 Sign in with a different account"):
+        logout()
+        st.markdown(f'<meta http-equiv="refresh" content="0;url={logout_url}">', unsafe_allow_html=True)
 
 
 def render_login_button():
@@ -329,13 +573,24 @@ export AUTH0_CALLBACK_URL="http://localhost:8501"
 
 def render_logout_button(location: str = "sidebar"):
     """Render logout button."""
-    logout_url = logout()
+    config = get_auth0_config()
+    
+    # Build logout URL without clearing session state yet
+    logout_url = (
+        f"{config.logout_endpoint}?"
+        f"client_id={config.client_id}&"
+        f"returnTo={quote_plus(config.callback_url)}"
+    )
     
     if location == "sidebar":
         if st.sidebar.button("🚪 Logout", use_container_width=True):
+            # Clear session and cookie on click
+            logout()
             st.markdown(f'<meta http-equiv="refresh" content="0;url={logout_url}">', unsafe_allow_html=True)
     else:
         if st.button("🚪 Logout"):
+            # Clear session and cookie on click
+            logout()
             st.markdown(f'<meta http-equiv="refresh" content="0;url={logout_url}">', unsafe_allow_html=True)
 
 

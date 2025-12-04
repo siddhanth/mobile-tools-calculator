@@ -12,10 +12,12 @@ from auth import (
     init_session_state,
     handle_callback,
     is_authenticated,
+    is_authorized,
     get_user_name,
     get_user_email,
     render_login_button,
     render_logout_button,
+    render_unauthorized_page,
 )
 
 # Import tab renderers
@@ -198,7 +200,15 @@ def main():
         render_login_page()
         return
     
-    # User is authenticated - show the app
+    # Check authorization (allowed emails/domains)
+    if not is_authorized():
+        st.title("🧠 2X in 5Y = 15% CAGR")
+        st.markdown("*Smart PE & PB-based Investment Strategies*")
+        st.divider()
+        render_unauthorized_page(get_user_email())
+        return
+    
+    # User is authenticated AND authorized - show the app
     # Title
     st.title("🧠 2X in 5Y = 15% CAGR")
     st.markdown("*Smart PE & PB-based Investment Strategies*")
