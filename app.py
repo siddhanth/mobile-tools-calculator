@@ -6,13 +6,17 @@ This is the main app entry point that orchestrates the tab modules.
 """
 
 import streamlit as st
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
-from datetime import datetime, timedelta
-from pathlib import Path
 
-from strategy import PRESET_STRATEGIES
+# Import Auth0 authentication
+from auth import (
+    init_session_state,
+    handle_callback,
+    is_authenticated,
+    get_user_name,
+    get_user_email,
+    render_login_button,
+    render_logout_button,
+)
 
 # Import tab renderers
 from tabs.dashboard import render_dashboard_tab
@@ -30,25 +34,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load authentication config
-CONFIG_PATH = Path(__file__).parent / "config" / "auth_config.yaml"
-
-
-def load_auth_config():
-    """Load authentication configuration from YAML file."""
-    with open(CONFIG_PATH) as file:
-        return yaml.load(file, Loader=SafeLoader)
-
-
-def get_authenticator():
-    """Create and return the authenticator object."""
-    config = load_auth_config()
-    return stauth.Authenticate(
-        config['credentials'],
-        config['cookie']['name'],
-        config['cookie']['key'],
-        config['cookie']['expiry_days']
-    )
+# Initialize auth session state
+init_session_state()
 
 # Custom CSS
 st.markdown("""
@@ -182,31 +169,33 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def render_login_page(authenticator):
-    """Render the login page."""
+def render_login_page():
+    """Render the login page with Auth0 authentication."""
     st.title("🧠 2X in 5Y = 15% CAGR")
     st.markdown("*Smart PE & PB-based Investment Strategies*")
     st.divider()
     
     st.markdown("### 🔐 Please Login to Continue")
-    # v0.4.2 API: login(location='main') with keyword arguments
-    authenticator.login(location='main')
+    st.markdown("")
     
-    if st.session_state.get("authentication_status") is False:
-        st.error("❌ Username or password is incorrect")
-    elif st.session_state.get("authentication_status") is None:
-        st.info("👆 Enter your credentials above")
+    # Center the login button
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        render_login_button()
+    
+    st.markdown("")
+    st.info("👆 Click the button above to sign in with Google, GitHub, or other providers")
 
 
 def main():
     """Main application entry point."""
     
-    # Initialize authenticator
-    authenticator = get_authenticator()
+    # Handle OAuth callback (if returning from Auth0)
+    handle_callback()
     
     # Check authentication status
-    if st.session_state.get("authentication_status") is not True:
-        render_login_page(authenticator)
+    if not is_authenticated():
+        render_login_page()
         return
     
     # User is authenticated - show the app
@@ -217,8 +206,12 @@ def main():
     # Sidebar - Help info
     with st.sidebar:
         # User info and logout at top
-        st.markdown(f"👤 Welcome, **{st.session_state.get('name', 'User')}**")
-        authenticator.logout(button_name='Logout', location='sidebar')
+        user_name = get_user_name()
+        user_email = get_user_email()
+        st.markdown(f"👤 Welcome, **{user_name}**")
+        if user_email:
+            st.caption(f"📧 {user_email}")
+        render_logout_button(location="sidebar")
         st.divider()
         
         st.header("ℹ️ About 2X in 5Y = 15% CAGR")

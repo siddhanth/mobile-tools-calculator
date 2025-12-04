@@ -1,0 +1,49 @@
+# Auth0 Configuration for SIP Simulator
+# 
+# Setup Instructions:
+# 1. Create an Auth0 account at https://auth0.com
+# 2. Create a new "Regular Web Application" in your Auth0 dashboard
+# 3. Configure the following settings in your Auth0 application:
+#    - Allowed Callback URLs: http://localhost:8501/callback
+#    - Allowed Logout URLs: http://localhost:8501
+#    - Allowed Web Origins: http://localhost:8501
+# 4. Copy your credentials below OR use environment variables
+#
+# Environment Variables (recommended for production):
+#   AUTH0_DOMAIN - Your Auth0 tenant domain (e.g., your-tenant.auth0.com)
+#   AUTH0_CLIENT_ID - Your Auth0 application client ID
+#   AUTH0_CLIENT_SECRET - Your Auth0 application client secret
+#   AUTH0_CALLBACK_URL - Callback URL for OAuth flow
+
+auth0:
+  # Your Auth0 tenant domain (e.g., your-tenant.us.auth0.com)
+  domain: ${AUTH0_DOMAIN}
+  
+  # Your Auth0 application client ID
+  client_id: ${AUTH0_CLIENT_ID}
+  
+  # Your Auth0 application client secret
+  client_secret: ${AUTH0_CLIENT_SECRET}
+  
+  # Callback URL - must match Auth0 dashboard settings
+  callback_url: ${AUTH0_CALLBACK_URL:-http://localhost:8501/callback}
+  
+  # OAuth scopes to request
+  scopes:
+    - openid
+    - profile
+    - email
+
+# Session settings
+session:
+  # Session cookie name
+  cookie_name: sip_simulator_session
+  
+  # Session expiry in days
+  expiry_days: 30
+
+# Optional: Allowed email domains (leave empty to allow all)
+# allowed_domains:
+#   - example.com
+#   - yourcompany.com
+
