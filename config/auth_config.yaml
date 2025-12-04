@@ -1,0 +1,27 @@
+credentials:
+  usernames:
+    admin:
+      email: admin@example.com
+      name: Admin User
+      failed_login_attempts: 0
+      logged_in: false
+      # Default password: sip2x152025 (CHANGE THIS!)
+      # Generate new hashes using: python scripts/generate_password_hash.py <password>
+      password: $2b$12$Ka8uk82I5gyPB7paG9mw8.NUHvi/IeP695SGHmCMGc2l01ns7YxRa
+    user1:
+      email: user1@example.com
+      name: Regular User
+      failed_login_attempts: 0
+      logged_in: false
+      # Default password: user123 (CHANGE THIS!)
+      password: $2b$12$ANtYx3gCwV5Cm3rXa7tnDusBLO5jsO0GdpH2nEbyUD83BpdyzvPp2
+
+cookie:
+  expiry_days: 30
+  key: sip_simulator_auth_key_change_this_in_production
+  name: sip_simulator_auth
+
+preauthorized:
+  emails:
+    - example@example.com
+

@@ -1,0 +1,51 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Streamlit
+.streamlit/
+
+# Cache files
+*.cache
+sector_current_pe_cache.csv
+sector_current_pe_cache_meta.txt
+sector_pe_matrix_cache.csv
+sector_pe_matrix_cache_meta.txt
+
+# User config (optional - uncomment if you want to ignore)
+# user_config.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Authentication config (contains passwords - DO NOT COMMIT with real credentials)
+# config/auth_config.yaml
+
+.cache

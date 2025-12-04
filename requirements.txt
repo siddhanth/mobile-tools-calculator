@@ -1,0 +1,12 @@
+streamlit>=1.29.0
+streamlit-authenticator>=0.3.0
+yfinance>=0.2.33
+plotly>=5.18.0
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+matplotlib>=3.7.0
+nsepython>=0.5
+PyYAML>=6.0

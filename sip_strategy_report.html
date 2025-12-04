@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIP Strategy Comparison Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #333;
+        }
+        .card h3 { color: #888; font-size: 0.9rem; margin-bottom: 10px; }
+        .card .value { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+        .card .subtext { color: #666; font-size: 0.85rem; margin-top: 5px; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        th {
+            background: linear-gradient(135deg, #2a2a4e 0%, #1a1a3e 100%);
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #00d4ff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #2a2a3e;
+            font-size: 0.9rem;
+        }
+        tr:hover { background: rgba(0, 212, 255, 0.05); }
+        .fund-name { 
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .positive { color: #00d46a; }
+        .negative { color: #ff4757; }
+        .highlight { 
+            background: linear-gradient(90deg, rgba(0,212,255,0.1), transparent);
+            font-weight: 600;
+        }
+        .benefit-high { color: #00ff88; font-weight: bold; }
+        .benefit-medium { color: #ffcc00; }
+        .benefit-low { color: #ff9966; }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            table { font-size: 0.8rem; }
+            th, td { padding: 8px 5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 SIP Strategy Comparison Report</h1>
+        <p class="subtitle">Comparing Regular SIP vs PE-Based Strategies across Top Equity Mutual Funds (5-Year Backtest)</p>
+        
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Funds Analyzed</h3>
+                <div class="value">37</div>
+                <div class="subtext">Top Equity Growth Funds</div>
+            </div>
+            <div class="card">
+                <h3>Best Strategy Overall</h3>
+                <div class="value">Hardcore</div>
+                <div class="subtext">Highest returns in 36/37 funds</div>
+            </div>
+            <div class="card">
+                <h3>Avg Extra Return</h3>
+                <div class="value positive">+7.4%</div>
+                <div class="subtext">Hardcore vs Balanced SIP</div>
+            </div>
+            <div class="card">
+                <h3>Report Generated</h3>
+                <div class="value" style="font-size: 1.2rem;">28 Nov 2025</div>
+                <div class="subtext">23:02 IST</div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6b7280;"></div>
+                <span>Balanced (1x always)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #22c55e;"></div>
+                <span>Opportunistic (2x/3x/4x)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f59e0b;"></div>
+                <span>Aggressive (3x/6x/12x)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ef4444;"></div>
+                <span>Hardcore (3x/8x/16x)</span>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fund Name</th>
+                    <th>Balanced Return</th>
+                    <th>Opportunistic</th>
+                    <th>Aggressive</th>
+                    <th>Hardcore</th>
+                    <th>Extra Benefit</th>
+                    <th>Balanced XIRR</th>
+                    <th>Hardcore XIRR</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>1</td>
+                    <td class="fund-name" title="HDFC Mid Cap Fund - Growth Option - Direct Plan">HDFC Mid Cap Fund - Growth Option - Direct Plan</td>
+                    <td class="positive">+82.6%</td>
+                    <td class="positive">+88.1%</td>
+                    <td class="positive">+94.7%</td>
+                    <td class="positive highlight">+98.3%</td>
+                    <td class="benefit-high">+15.7%</td>
+                    <td>24.8%</td>
+                    <td class="highlight">26.3%</td>
+                </tr>
+
+                <tr>
+                    <td>2</td>
+                    <td class="fund-name" title="Motilal Oswal Nasdaq 100 Fund of Fund- Direct Plan">Motilal Oswal Nasdaq 100 Fund of Fund- Direct Plan</td>
+                    <td class="positive">+86.5%</td>
+                    <td class="positive">+92.0%</td>
+                    <td class="positive">+98.5%</td>
+                    <td class="positive highlight">+101.9%</td>
+                    <td class="benefit-high">+15.4%</td>
+                    <td>25.7%</td>
+                    <td class="highlight">27.0%</td>
+                </tr>
+
+                <tr>
+                    <td>3</td>
+                    <td class="fund-name" title="ICICI Prudential Overnight Fund - Half Yearly IDCW">ICICI Prudential Overnight Fund - Half Yearly IDCW</td>
+                    <td class="positive">+859.6%</td>
+                    <td class="positive">+863.2%</td>
+                    <td class="positive">+869.0%</td>
+                    <td class="positive highlight">+874.6%</td>
+                    <td class="benefit-high">+15.0%</td>
+                    <td>630.8%</td>
+                    <td class="highlight">1034.5%</td>
+                </tr>
+
+                <tr>
+                    <td>4</td>
+                    <td class="fund-name" title="BANK OF INDIA Manufacturing & Infrastructure Fund-">BANK OF INDIA Manufacturing & Infrastructure Fund-</td>
+                    <td class="positive">+78.0%</td>
+                    <td class="positive">+83.2%</td>
+                    <td class="positive">+89.4%</td>
+                    <td class="positive highlight">+92.8%</td>
+                    <td class="benefit-high">+14.8%</td>
+                    <td>23.7%</td>
+                    <td class="highlight">25.1%</td>
+                </tr>
+
+                <tr>
+                    <td>5</td>
+                    <td class="fund-name" title="Nippon India Small Cap Fund - Direct Plan Growth P">Nippon India Small Cap Fund - Direct Plan Growth P</td>
+                    <td class="positive">+69.8%</td>
+                    <td class="positive">+74.3%</td>
+                    <td class="positive">+79.5%</td>
+                    <td class="positive highlight">+82.4%</td>
+                    <td class="benefit-high">+12.5%</td>
+                    <td>21.7%</td>
+                    <td class="highlight">22.9%</td>
+                </tr>
+
+                <tr>
+                    <td>6</td>
+                    <td class="fund-name" title="Franklin U.S. Opportunities Equity Active Fund of ">Franklin U.S. Opportunities Equity Active Fund of </td>
+                    <td class="positive">+48.8%</td>
+                    <td class="positive">+52.9%</td>
+                    <td class="positive">+57.9%</td>
+                    <td class="positive highlight">+60.5%</td>
+                    <td class="benefit-high">+11.7%</td>
+                    <td>16.2%</td>
+                    <td class="highlight">17.9%</td>
+                </tr>
+
+                <tr>
+                    <td>7</td>
+                    <td class="fund-name" title="Tata Infrastructure Fund -Direct Plan -Growth Opti">Tata Infrastructure Fund -Direct Plan -Growth Opti</td>
+                    <td class="positive">+54.6%</td>
+                    <td class="positive">+58.6%</td>
+                    <td class="positive">+63.3%</td>
+                    <td class="positive highlight">+65.9%</td>
+                    <td class="benefit-high">+11.3%</td>
+                    <td>17.8%</td>
+                    <td class="highlight">19.2%</td>
+                </tr>
+
+                <tr>
+                    <td>8</td>
+                    <td class="fund-name" title="Kotak Midcap Fund - Direct Plan - Growth">Kotak Midcap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+67.3%</td>
+                    <td class="positive">+71.3%</td>
+                    <td class="positive">+76.0%</td>
+                    <td class="positive highlight">+78.6%</td>
+                    <td class="benefit-high">+11.3%</td>
+                    <td>21.1%</td>
+                    <td class="highlight">22.1%</td>
+                </tr>
+
+                <tr>
+                    <td>9</td>
+                    <td class="fund-name" title="Nippon India Flexi Cap Fund - Regular Plan - IDCW ">Nippon India Flexi Cap Fund - Regular Plan - IDCW </td>
+                    <td class="positive">+33.3%</td>
+                    <td class="positive">+37.4%</td>
+                    <td class="positive">+42.1%</td>
+                    <td class="positive highlight">+44.5%</td>
+                    <td class="benefit-high">+11.2%</td>
+                    <td>13.7%</td>
+                    <td class="highlight">15.1%</td>
+                </tr>
+
+                <tr>
+                    <td>10</td>
+                    <td class="fund-name" title="Nippon India Large Cap Fund - Direct Plan Growth P">Nippon India Large Cap Fund - Direct Plan Growth P</td>
+                    <td class="positive">+61.3%</td>
+                    <td class="positive">+65.2%</td>
+                    <td class="positive">+69.8%</td>
+                    <td class="positive highlight">+72.2%</td>
+                    <td class="benefit-high">+10.9%</td>
+                    <td>19.6%</td>
+                    <td class="highlight">20.6%</td>
+                </tr>
+
+                <tr>
+                    <td>11</td>
+                    <td class="fund-name" title="ICICI Prudential Large & Mid Cap Fund - Direct Pla">ICICI Prudential Large & Mid Cap Fund - Direct Pla</td>
+                    <td class="positive">+70.8%</td>
+                    <td class="positive">+74.5%</td>
+                    <td class="positive">+79.0%</td>
+                    <td class="positive highlight">+81.4%</td>
+                    <td class="benefit-high">+10.7%</td>
+                    <td>21.9%</td>
+                    <td class="highlight">22.7%</td>
+                </tr>
+
+                <tr>
+                    <td>12</td>
+                    <td class="fund-name" title="Parag Parikh Flexi Cap Fund - Direct Plan - Growth">Parag Parikh Flexi Cap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+58.7%</td>
+                    <td class="positive">+62.2%</td>
+                    <td class="positive">+66.5%</td>
+                    <td class="positive highlight">+68.8%</td>
+                    <td class="benefit-high">+10.1%</td>
+                    <td>18.9%</td>
+                    <td class="highlight">19.8%</td>
+                </tr>
+
+                <tr>
+                    <td>13</td>
+                    <td class="fund-name" title="Axis Midcap Fund - Direct Plan - Growth">Axis Midcap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+55.5%</td>
+                    <td class="positive">+59.0%</td>
+                    <td class="positive">+63.2%</td>
+                    <td class="positive highlight">+65.4%</td>
+                    <td class="benefit-high">+10.0%</td>
+                    <td>18.0%</td>
+                    <td class="highlight">19.0%</td>
+                </tr>
+
+                <tr>
+                    <td>14</td>
+                    <td class="fund-name" title="ICICI Prudential Large Cap Fund (erstwhile Bluechi">ICICI Prudential Large Cap Fund (erstwhile Bluechi</td>
+                    <td class="positive">+56.0%</td>
+                    <td class="positive">+59.3%</td>
+                    <td class="positive">+63.3%</td>
+                    <td class="positive highlight">+65.5%</td>
+                    <td class="benefit-high">+9.5%</td>
+                    <td>18.1%</td>
+                    <td class="highlight">19.1%</td>
+                </tr>
+
+                <tr>
+                    <td>15</td>
+                    <td class="fund-name" title="Axis Small Cap Fund - Direct Plan - Growth">Axis Small Cap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+58.4%</td>
+                    <td class="positive">+61.8%</td>
+                    <td class="positive">+65.7%</td>
+                    <td class="positive highlight">+67.8%</td>
+                    <td class="benefit-high">+9.4%</td>
+                    <td>18.8%</td>
+                    <td class="highlight">19.6%</td>
+                </tr>
+
+                <tr>
+                    <td>16</td>
+                    <td class="fund-name" title="Mirae Asset Large & Midcap Fund - Direct Plan - Gr">Mirae Asset Large & Midcap Fund - Direct Plan - Gr</td>
+                    <td class="positive">+50.9%</td>
+                    <td class="positive">+53.9%</td>
+                    <td class="positive">+57.6%</td>
+                    <td class="positive highlight">+59.5%</td>
+                    <td class="benefit-high">+8.6%</td>
+                    <td>16.8%</td>
+                    <td class="highlight">17.6%</td>
+                </tr>
+
+                <tr>
+                    <td>17</td>
+                    <td class="fund-name" title="SBI Small Cap Fund - Direct Plan - Growth">SBI Small Cap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+44.9%</td>
+                    <td class="positive">+47.9%</td>
+                    <td class="positive">+51.4%</td>
+                    <td class="positive highlight">+53.4%</td>
+                    <td class="benefit-high">+8.4%</td>
+                    <td>15.1%</td>
+                    <td class="highlight">16.1%</td>
+                </tr>
+
+                <tr>
+                    <td>18</td>
+                    <td class="fund-name" title="Axis ELSS Tax Saver Fund - Direct Plan - Growth Op">Axis ELSS Tax Saver Fund - Direct Plan - Growth Op</td>
+                    <td class="positive">+35.4%</td>
+                    <td class="positive">+38.2%</td>
+                    <td class="positive">+41.6%</td>
+                    <td class="positive highlight">+43.5%</td>
+                    <td class="benefit-high">+8.1%</td>
+                    <td>12.3%</td>
+                    <td class="highlight">13.5%</td>
+                </tr>
+
+                <tr>
+                    <td>19</td>
+                    <td class="fund-name" title="SBI Large Cap FUND-DIRECT PLAN -GROWTH">SBI Large Cap FUND-DIRECT PLAN -GROWTH</td>
+                    <td class="positive">+43.1%</td>
+                    <td class="positive">+45.9%</td>
+                    <td class="positive">+49.2%</td>
+                    <td class="positive highlight">+51.0%</td>
+                    <td class="benefit-high">+7.9%</td>
+                    <td>14.6%</td>
+                    <td class="highlight">15.5%</td>
+                </tr>
+
+                <tr>
+                    <td>20</td>
+                    <td class="fund-name" title="UTI Nifty 50 Index Fund - Growth Option- Direct">UTI Nifty 50 Index Fund - Growth Option- Direct</td>
+                    <td class="positive">+40.4%</td>
+                    <td class="positive">+42.9%</td>
+                    <td class="positive">+45.8%</td>
+                    <td class="positive highlight">+47.4%</td>
+                    <td class="benefit-high">+7.0%</td>
+                    <td>13.8%</td>
+                    <td class="highlight">14.5%</td>
+                </tr>
+
+                <tr>
+                    <td>21</td>
+                    <td class="fund-name" title="Axis Large Cap Fund - Direct Plan - Growth">Axis Large Cap Fund - Direct Plan - Growth</td>
+                    <td class="positive">+34.0%</td>
+                    <td class="positive">+36.4%</td>
+                    <td class="positive">+39.3%</td>
+                    <td class="positive highlight">+40.9%</td>
+                    <td class="benefit-high">+6.8%</td>
+                    <td>11.9%</td>
+                    <td class="highlight">12.8%</td>
+                </tr>
+
+                <tr>
+                    <td>22</td>
+                    <td class="fund-name" title="HDFC Hybrid Equity Fund - Growth Option - Direct P">HDFC Hybrid Equity Fund - Growth Option - Direct P</td>
+                    <td class="positive">+37.5%</td>
+                    <td class="positive">+39.8%</td>
+                    <td class="positive">+42.6%</td>
+                    <td class="positive highlight">+44.2%</td>
+                    <td class="benefit-high">+6.7%</td>
+                    <td>12.9%</td>
+                    <td class="highlight">13.7%</td>
+                </tr>
+
+                <tr>
+                    <td>23</td>
+                    <td class="fund-name" title="Aditya Birla Sun Life Small Cap Fund -Direct - IDC">Aditya Birla Sun Life Small Cap Fund -Direct - IDC</td>
+                    <td class="positive">+21.2%</td>
+                    <td class="positive">+23.4%</td>
+                    <td class="positive">+25.9%</td>
+                    <td class="positive highlight">+27.3%</td>
+                    <td class="benefit-high">+6.1%</td>
+                    <td>7.8%</td>
+                    <td class="highlight">9.0%</td>
+                </tr>
+
+                <tr>
+                    <td>24</td>
+                    <td class="fund-name" title="ICICI Prudential Technology Fund - Direct Plan -  ">ICICI Prudential Technology Fund - Direct Plan -  </td>
+                    <td class="positive">+38.2%</td>
+                    <td class="positive">+40.3%</td>
+                    <td class="positive">+42.8%</td>
+                    <td class="positive highlight">+44.2%</td>
+                    <td class="benefit-high">+6.0%</td>
+                    <td>13.1%</td>
+                    <td class="highlight">13.7%</td>
+                </tr>
+
+                <tr>
+                    <td>25</td>
+                    <td class="fund-name" title="Mirae Asset ELSS Tax Saver Fund - Direct Plan - ID">Mirae Asset ELSS Tax Saver Fund - Direct Plan - ID</td>
+                    <td class="positive">+24.7%</td>
+                    <td class="positive">+26.5%</td>
+                    <td class="positive">+28.6%</td>
+                    <td class="positive highlight">+29.7%</td>
+                    <td class="benefit-medium">+5.0%</td>
+                    <td>8.9%</td>
+                    <td class="highlight">9.7%</td>
+                </tr>
+
+                <tr>
+                    <td>26</td>
+                    <td class="fund-name" title="ICICI Prudential FMCG Fund - Direct Plan -  Growth">ICICI Prudential FMCG Fund - Direct Plan -  Growth</td>
+                    <td class="positive">+25.6%</td>
+                    <td class="positive">+27.2%</td>
+                    <td class="positive">+29.1%</td>
+                    <td class="positive highlight">+30.1%</td>
+                    <td class="benefit-medium">+4.5%</td>
+                    <td>9.2%</td>
+                    <td class="highlight">9.8%</td>
+                </tr>
+
+                <tr>
+                    <td>27</td>
+                    <td class="fund-name" title="Axis Conservative Hybrid Fund - Direct Plan - Grow">Axis Conservative Hybrid Fund - Direct Plan - Grow</td>
+                    <td class="positive">+23.0%</td>
+                    <td class="positive">+24.2%</td>
+                    <td class="positive">+25.6%</td>
+                    <td class="positive highlight">+26.3%</td>
+                    <td class="benefit-medium">+3.3%</td>
+                    <td>8.4%</td>
+                    <td class="highlight">8.7%</td>
+                </tr>
+
+                <tr>
+                    <td>28</td>
+                    <td class="fund-name" title="DSP Gilt Fund - Direct Plan - Growth">DSP Gilt Fund - Direct Plan - Growth</td>
+                    <td class="positive">+18.5%</td>
+                    <td class="positive">+19.5%</td>
+                    <td class="positive">+20.7%</td>
+                    <td class="positive highlight">+21.3%</td>
+                    <td class="benefit-medium">+2.8%</td>
+                    <td>6.8%</td>
+                    <td class="highlight">7.1%</td>
+                </tr>
+
+                <tr>
+                    <td>29</td>
+                    <td class="fund-name" title="DSP Savings Fund - Direct Plan - Growth">DSP Savings Fund - Direct Plan - Growth</td>
+                    <td class="positive">+18.6%</td>
+                    <td class="positive">+19.4%</td>
+                    <td class="positive">+20.3%</td>
+                    <td class="positive highlight">+20.8%</td>
+                    <td class="benefit-medium">+2.3%</td>
+                    <td>6.9%</td>
+                    <td class="highlight">7.0%</td>
+                </tr>
+
+                <tr>
+                    <td>30</td>
+                    <td class="fund-name" title="HDFC Money Market Fund - Growth Option - Direct Pl">HDFC Money Market Fund - Growth Option - Direct Pl</td>
+                    <td class="positive">+19.3%</td>
+                    <td class="positive">+20.1%</td>
+                    <td class="positive">+21.0%</td>
+                    <td class="positive highlight">+21.5%</td>
+                    <td class="benefit-medium">+2.3%</td>
+                    <td>7.1%</td>
+                    <td class="highlight">7.2%</td>
+                </tr>
+
+                <tr>
+                    <td>31</td>
+                    <td class="fund-name" title="LIC MF Gilt Fund-Direct Plan-Growth">LIC MF Gilt Fund-Direct Plan-Growth</td>
+                    <td class="positive">+15.0%</td>
+                    <td class="positive">+15.8%</td>
+                    <td class="positive">+16.7%</td>
+                    <td class="positive highlight">+17.2%</td>
+                    <td class="benefit-medium">+2.3%</td>
+                    <td>5.6%</td>
+                    <td class="highlight">5.9%</td>
+                </tr>
+
+                <tr>
+                    <td>32</td>
+                    <td class="fund-name" title="Kotak Money Market Fund - (Growth) - Direct">Kotak Money Market Fund - (Growth) - Direct</td>
+                    <td class="positive">+19.2%</td>
+                    <td class="positive">+20.0%</td>
+                    <td class="positive">+21.0%</td>
+                    <td class="positive highlight">+21.5%</td>
+                    <td class="benefit-medium">+2.2%</td>
+                    <td>7.1%</td>
+                    <td class="highlight">7.2%</td>
+                </tr>
+
+                <tr>
+                    <td>33</td>
+                    <td class="fund-name" title="Groww Liquid Fund ( formerly known as Indiabulls L">Groww Liquid Fund ( formerly known as Indiabulls L</td>
+                    <td class="positive">+17.5%</td>
+                    <td class="positive">+18.3%</td>
+                    <td class="positive">+19.1%</td>
+                    <td class="positive highlight">+19.6%</td>
+                    <td class="benefit-medium">+2.1%</td>
+                    <td>6.5%</td>
+                    <td class="highlight">6.6%</td>
+                </tr>
+
+                <tr>
+                    <td>34</td>
+                    <td class="fund-name" title="quant Liquid Fund - Growth Option - Direct Plan">quant Liquid Fund - Growth Option - Direct Plan</td>
+                    <td class="positive">+17.6%</td>
+                    <td class="positive">+18.4%</td>
+                    <td class="positive">+19.2%</td>
+                    <td class="positive highlight">+19.7%</td>
+                    <td class="benefit-medium">+2.0%</td>
+                    <td>6.6%</td>
+                    <td class="highlight">6.6%</td>
+                </tr>
+
+                <tr>
+                    <td>35</td>
+                    <td class="fund-name" title="DSP Regular Savings Fund - Direct Plan - IDCW - Mo">DSP Regular Savings Fund - Direct Plan - IDCW - Mo</td>
+                    <td class="positive">+7.3%</td>
+                    <td class="positive">+7.9%</td>
+                    <td class="positive">+8.6%</td>
+                    <td class="positive highlight">+8.9%</td>
+                    <td class="benefit-low">+1.6%</td>
+                    <td>2.8%</td>
+                    <td class="highlight">3.1%</td>
+                </tr>
+
+                <tr>
+                    <td>36</td>
+                    <td class="fund-name" title="Axis Treasury Advantage Fund - Direct Plan - Weekl">Axis Treasury Advantage Fund - Direct Plan - Weekl</td>
+                    <td class="positive">+0.0%</td>
+                    <td class="positive">+0.0%</td>
+                    <td class="positive">+0.0%</td>
+                    <td class="positive highlight">+0.0%</td>
+                    <td class="benefit-low">+0.0%</td>
+                    <td>0.0%</td>
+                    <td class="highlight">0.0%</td>
+                </tr>
+
+                <tr>
+                    <td>37</td>
+                    <td class="fund-name" title="Sundaram Low Duration Fund Direct Plan - Weekly In">Sundaram Low Duration Fund Direct Plan - Weekly In</td>
+                    <td class="positive">+6.0%</td>
+                    <td class="positive">+6.0%</td>
+                    <td class="positive">+6.0%</td>
+                    <td class="positive highlight">+6.0%</td>
+                    <td class="benefit-low">+0.0%</td>
+                    <td>11.4%</td>
+                    <td class="highlight">11.4%</td>
+                </tr>
+
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>⚠️ Past performance does not guarantee future results. This is for educational purposes only.</p>
+            <p>Data source: mfapi.in | PE data: Historical Nifty 50 PE | Base SIP: ₹5,000/week</p>
+        </div>
+    </div>
+</body>
+</html>

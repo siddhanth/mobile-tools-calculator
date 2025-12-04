@@ -1,0 +1,11 @@
+{
+  "equity_pct": 37.3,
+  "gold_pct": 14.668,
+  "debt_pct": 35.672,
+  "cash_pct": 12.36,
+  "equity_return": 15.0,
+  "gold_return": 12.0,
+  "debt_return": 7.5,
+  "cash_return": 5.5,
+  "target_irr": 15.0
+}

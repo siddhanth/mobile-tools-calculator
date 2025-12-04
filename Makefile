@@ -1,0 +1,47 @@
+.PHONY: run stop restart install clean logs help
+
+# Default target
+help:
+	@echo "Available commands:"
+	@echo "  make run      - Start the Streamlit app"
+	@echo "  make stop     - Stop the running app"
+	@echo "  make restart  - Restart the app"
+	@echo "  make install  - Install dependencies"
+	@echo "  make clean    - Remove cache files"
+	@echo "  make logs     - Show recent app logs"
+
+# Activate venv and run the app
+run:
+	@echo "Starting Streamlit app..."
+	@source venv/bin/activate && streamlit run app.py --server.headless true
+
+# Stop the running app
+stop:
+	@echo "Stopping Streamlit app..."
+	@pkill -f "streamlit run app.py" || true
+
+# Restart the app
+restart: stop
+	@sleep 1
+	@$(MAKE) run
+
+# Install dependencies
+install:
+	@echo "Creating virtual environment..."
+	@python3 -m venv venv
+	@echo "Installing dependencies..."
+	@source venv/bin/activate && pip install -r requirements.txt
+
+# Clean cache files
+clean:
+	@echo "Cleaning cache files..."
+	@rm -rf __pycache__ .streamlit
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "Done."
+
+# Show logs (tail the most recent terminal output)
+logs:
+	@echo "Recent app output:"
+	@ps aux | grep -i streamlit | grep -v grep || echo "No Streamlit process found"
+
