@@ -21,6 +21,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Development mode - bypass authentication (set BYPASS_AUTH=true for localhost)
+BYPASS_AUTH = os.getenv("BYPASS_AUTH", "false").lower() in ("true", "1", "yes")
+
 # Session cookie settings
 SESSION_COOKIE_NAME = "sip_session"
 SESSION_EXPIRY_DAYS = 30
@@ -380,6 +383,10 @@ def logout():
 
 def is_authenticated() -> bool:
     """Check if user is authenticated."""
+    # Bypass authentication in development mode
+    if BYPASS_AUTH:
+        return True
+    
     authenticated = st.session_state.get("authenticated", False)
     
     # If not authenticated and no session_token in URL, inject JS to read cookie
@@ -394,6 +401,10 @@ def is_authenticated() -> bool:
 
 def is_authorized() -> bool:
     """Check if user is both authenticated AND authorized."""
+    # Bypass authorization in development mode
+    if BYPASS_AUTH:
+        return True
+    
     if not is_authenticated():
         return False
     
@@ -408,6 +419,10 @@ def get_user() -> dict | None:
 
 def get_user_name() -> str:
     """Get current user's display name."""
+    # Return default user in development mode
+    if BYPASS_AUTH:
+        return "Developer"
+    
     user = get_user()
     if user:
         return user.get("name", user.get("email", "User"))
@@ -416,6 +431,10 @@ def get_user_name() -> str:
 
 def get_user_email() -> str | None:
     """Get current user's email."""
+    # Return default email in development mode
+    if BYPASS_AUTH:
+        return "dev@localhost"
+    
     user = get_user()
     if user:
         return user.get("email")

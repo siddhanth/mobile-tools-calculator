@@ -26,6 +26,7 @@ from tabs.backtest import render_backtest_tab
 from tabs.analysis import render_analysis_tab
 from tabs.plan import render_plan_tab
 from tabs.us_markets import render_us_markets_tab
+from tabs import pms
 
 
 # Page config
@@ -233,6 +234,8 @@ def main():
         
         **🇺🇸 US Markets**: US market overview (S&P 500, NASDAQ, Russell 2000)
         
+        **🏢 PMS**: Analyze PMS holdings from multiple providers
+        
         **🔬 Backtest**: Compare strategies and simulate SIP investments
         
         **📈 Analysis**: Deep dives into fund performance and sector valuations
@@ -276,10 +279,11 @@ def main():
     # Initialize default variables
     base_amount = 5000
     
-    # Main content area - 5 Tab Structure
-    tab_dashboard, tab_us_markets, tab_backtest, tab_analysis, tab_plan = st.tabs([
+    # Main content area - 6 Tab Structure
+    tab_dashboard, tab_us_markets, tab_pms, tab_backtest, tab_analysis, tab_plan = st.tabs([
         "📊 India Dashboard", 
         "🇺🇸 US Markets",
+        "🏢 PMS",
         "🔬 Backtest", 
         "📈 Analysis", 
         "📋 Suggested Plan"
@@ -291,6 +295,9 @@ def main():
     
     with tab_us_markets:
         render_us_markets_tab()
+    
+    with tab_pms:
+        pms.render()
     
     with tab_backtest:
         render_backtest_tab()
